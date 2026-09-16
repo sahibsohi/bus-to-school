@@ -1,0 +1,22 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "types": [
+      "node",
+      "react"
+    ]
+  },
+  "include": [
+    "App.tsx",
+    "index.ts",
+    "src/**/*.ts",
+    "functions/src/domain.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "functions/lib",
+    "tests",
+    "scripts"
+  ]
+}

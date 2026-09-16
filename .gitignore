@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+dist/
+.env
+.env.local
+functions/lib/
+*-debug.log*
+playwright-report/
+test-results/
+.DS_Store

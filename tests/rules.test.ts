@@ -1,0 +1,11 @@
+import {readFileSync} from 'node:fs';import test,{before,after} from 'node:test';
+import {initializeTestEnvironment,assertFails,assertSucceeds,RulesTestEnvironment} from '@firebase/rules-unit-testing';
+import {doc,setDoc,getDoc,collection,query,where,getDocs} from 'firebase/firestore';
+let env:RulesTestEnvironment;
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-bts-connect',firestore:{rules:readFileSync('firestore.rules','utf8')}});await env.withSecurityRulesDisabled(async c=>{await setDoc(doc(c.firestore(),'rides/r1'),{memberUids:['parent-a','driver-a']});await setDoc(doc(c.firestore(),'rides/r2'),{memberUids:['parent-b']});});});
+after(async()=>{await env?.cleanup();});
+test('anonymous access blocked',async()=>{await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(),'rides/r1')));});
+test('parent may read their rider but not another child',async()=>{const db=env.authenticatedContext('parent-a',{role:'parent'}).firestore();await assertSucceeds(getDoc(doc(db,'rides/r1')));await assertFails(getDoc(doc(db,'rides/r2')));});
+test('parents must scope queries to membership',async()=>{const db=env.authenticatedContext('parent-a',{role:'parent'}).firestore();await assertFails(getDocs(collection(db,'rides')));await assertSucceeds(getDocs(query(collection(db,'rides'),where('memberUids','array-contains','parent-a'))));});
+test('client attendance writes blocked even for dispatcher',async()=>{await assertFails(setDoc(doc(env.authenticatedContext('d',{role:'dispatcher'}).firestore(),'rides/r1'),{status:'arrived'}));});
+test('dispatcher may read all rides',async()=>{await assertSucceeds(getDocs(collection(env.authenticatedContext('d',{role:'dispatcher'}).firestore(),'rides')));});

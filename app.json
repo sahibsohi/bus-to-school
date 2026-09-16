@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "BTS Connect",
+    "slug": "bts-connect",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.portfolio.btsconnect"
+    }
+  }
+}

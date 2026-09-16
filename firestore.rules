@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function staff(){return request.auth != null && request.auth.token.role == 'dispatcher';}
+  function member(){return request.auth != null && request.auth.uid in resource.data.memberUids;}
+  match /routes/{id} {allow read: if staff() || member(); allow write: if false;}
+  match /trips/{id} {allow read: if staff() || member(); allow write: if false;}
+  match /rides/{id} {allow read: if staff() || member(); allow write: if false;}
+  match /notices/{id} {allow read: if staff() || member(); allow write: if false;}
+  match /events/{id} {allow read: if staff(); allow write: if false;}
+  match /{document=**} {allow read, write: if false;}
+ }
+}

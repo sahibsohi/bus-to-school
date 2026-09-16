@@ -1,0 +1,31 @@
+{
+  "name": "bts-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "BTS private-school-bussing operations platform prototype",
+  "workspaces": [
+    "apps/mobile",
+    "apps/admin",
+    "functions",
+    "packages/shared"
+  ],
+  "scripts": {
+    "mobile": "npm --workspace apps/mobile start",
+    "mobile:web": "npm --workspace apps/mobile run web",
+    "admin": "npm --workspace apps/admin dev",
+    "admin:build": "npm --workspace apps/admin build",
+    "functions:build": "npm --workspace functions build",
+    "functions:serve": "npm --workspace functions serve",
+    "firebase:emulators": "firebase emulators:start",
+    "seed": "npm --workspace functions run seed",
+    "typecheck": "npm run typecheck:shared && npm run typecheck:functions && npm run typecheck:admin",
+    "typecheck:shared": "npm --workspace packages/shared run typecheck",
+    "typecheck:functions": "npm --workspace functions run typecheck",
+    "typecheck:admin": "npm --workspace apps/admin run typecheck",
+    "lint": "npm --workspace apps/admin run lint",
+    "test": "npm --workspace packages/shared test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

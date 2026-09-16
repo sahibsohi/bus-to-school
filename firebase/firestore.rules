@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function role(roleName) {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == roleName;
+    }
+
+    function isStaff() {
+      return role("dispatcher") || role("admin");
+    }
+
+    function isDriver() {
+      return role("driver");
+    }
+
+    match /users/{userId} {
+      allow read: if isSelf(userId) || isStaff();
+      allow create: if isSelf(userId);
+      allow update: if isSelf(userId) && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    match /students/{studentId} {
+      allow read: if signedIn() && (
+        isStaff()
+        || (role("parent") && request.auth.uid in resource.data.parentIds)
+        || (role("driver") && exists(/databases/$(database)/documents/routeStops/$(studentId)))
+      );
+      allow write: if isStaff();
+    }
+
+    match /routes/{routeId} {
+      allow read: if signedIn();
+      allow write: if isStaff();
+    }
+
+    match /routeStops/{stopId} {
+      allow read: if signedIn();
+      allow create, update: if isStaff();
+      allow delete: if isStaff();
+    }
+
+    match /trips/{tripId} {
+      allow read: if signedIn();
+      allow create: if isStaff();
+      allow update: if isStaff()
+        || (isDriver() && request.resource.data.driverId == request.auth.uid);
+      allow delete: if isStaff();
+    }
+
+    match /stopEvents/{eventId} {
+      allow read: if signedIn();
+      allow create: if isDriver()
+        && request.resource.data.recordedBy == request.auth.uid;
+      allow update, delete: if isStaff();
+    }
+
+    match /serviceAlerts/{alertId} {
+      allow read: if signedIn();
+      allow create, update: if isStaff();
+      allow delete: if role("admin");
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

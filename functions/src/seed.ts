@@ -7,13 +7,32 @@ const db = getFirestore();
 async function seed() {
   const batch = db.batch();
 
-  const users = [
-    ["demo-driver", { displayName: "Demo Driver", email: "driver@example.com", role: "driver", active: true }],
-    ["demo-parent", { displayName: "Demo Parent", email: "parent@example.com", role: "parent", active: true }],
-    ["demo-dispatcher", { displayName: "Demo Dispatcher", email: "dispatcher@example.com", role: "dispatcher", active: true }]
-  ];
+  // These user documents are application profiles. Firebase Auth accounts
+  // should be created separately. For local demo work, create matching
+  // Authentication users in the Firebase console or through the signup UI.
+  batch.set(db.doc("users/demo-driver"), {
+    id: "demo-driver",
+    displayName: "Demo Driver",
+    email: "driver@example.com",
+    role: "driver",
+    active: true
+  });
 
-  for (const [id, data] of users) batch.set(db.doc(`users/${id}`), data);
+  batch.set(db.doc("users/demo-parent"), {
+    id: "demo-parent",
+    displayName: "Demo Parent",
+    email: "parent@example.com",
+    role: "parent",
+    active: true
+  });
+
+  batch.set(db.doc("users/demo-dispatcher"), {
+    id: "demo-dispatcher",
+    displayName: "Demo Dispatcher",
+    email: "dispatcher@example.com",
+    role: "dispatcher",
+    active: true
+  });
 
   batch.set(db.doc("routes/demo-route"), {
     name: "Route 401 — Morning",
@@ -50,9 +69,10 @@ async function seed() {
     });
   }
 
+  const serviceDate = new Date().toISOString().slice(0, 10);
   batch.set(db.doc("trips/demo-trip"), {
     routeId: "demo-route",
-    serviceDate: new Date().toISOString().slice(0, 10),
+    serviceDate,
     driverId: "demo-driver",
     status: "scheduled",
     currentStopSequence: 0,
@@ -60,7 +80,7 @@ async function seed() {
   });
 
   await batch.commit();
-  console.log("BTS demo data seeded.");
+  console.log(`BTS demo data seeded for ${serviceDate}.`);
 }
 
 seed().catch((error) => {

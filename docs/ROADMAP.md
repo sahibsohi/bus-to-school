@@ -13,16 +13,22 @@
 - [x] Cloud Functions event handler
 - [x] Demo seed data
 - [x] Unit tests
+- [x] Architecture documentation
 
-## Phase 2 — Real Firebase integration
+## Phase 2 — Firebase integration
 
-- [ ] Email/password authentication
-- [ ] Role-aware onboarding
-- [ ] Real driver route listener
-- [ ] Real stop event writes
-- [ ] Parent-specific student query
-- [ ] Service-alert publishing UI
-- [ ] Emulator security-rule tests
+- [x] Firebase Authentication
+- [x] User profiles / roles
+- [x] Role-aware sign-in
+- [x] Driver route listener
+- [x] Daily trip listener
+- [x] Real stop event writes
+- [x] Cloud Function event processing
+- [x] Security Rules
+- [x] Required composite indexes
+- [x] Demo account workflow
+- [x] Emulator configuration
+- [ ] Automated Security Rules tests
 
 ## Phase 3 — Routing
 

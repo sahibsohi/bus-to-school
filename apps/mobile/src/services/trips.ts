@@ -1,30 +1,30 @@
 import {
+  addDoc,
   collection,
   doc,
   onSnapshot,
-  orderBy,
   query,
   serverTimestamp,
   updateDoc,
-  where,
-  addDoc
+  where
 } from "firebase/firestore";
 import { db } from "../firebase";
 
-export function subscribeToTrip(
-  tripId: string,
-  callback: (data: Record<string, unknown> | null) => void
-) {
+export function subscribeToTrip(tripId: string, callback: (data: Record<string, unknown> | null) => void) {
   return onSnapshot(doc(db, "trips", tripId), (snapshot) => {
-    callback(snapshot.exists() ? (snapshot.data() as Record<string, unknown>) : null);
+    callback(snapshot.exists() ? ({ id: snapshot.id, ...snapshot.data() }) : null);
   });
 }
 
-export function subscribeToStops(routeId: string, callback: (rows: Record<string, unknown>[]) => void) {
+export function subscribeToDriverTrips(
+  driverId: string,
+  serviceDate: string,
+  callback: (trips: Record<string, unknown>[]) => void
+) {
   const q = query(
-    collection(db, "routeStops"),
-    where("routeId", "==", routeId),
-    orderBy("sequence", "asc")
+    collection(db, "trips"),
+    where("driverId", "==", driverId),
+    where("serviceDate", "==", serviceDate)
   );
 
   return onSnapshot(q, (snapshot) => {
@@ -48,9 +48,12 @@ export async function recordStopEvent(input: {
   });
 }
 
-export async function updateTripStatus(tripId: string, status: string) {
+export async function updateTripStatus(tripId: string, status: string, currentStopSequence?: number) {
   await updateDoc(doc(db, "trips", tripId), {
     status,
+    ...(currentStopSequence === undefined ? {} : { currentStopSequence }),
+    ...(status === "in_progress" ? { startedAt: serverTimestamp() } : {}),
+    ...(status === "completed" ? { completedAt: serverTimestamp() } : {}),
     updatedAt: serverTimestamp()
   });
 }

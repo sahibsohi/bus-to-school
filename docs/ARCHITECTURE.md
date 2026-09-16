@@ -4,58 +4,67 @@
 
 ### Mobile app
 
-One Expo/React Native codebase supports the driver and parent experiences.
-
-**Driver flow**
-
-```text
-Login
-  ↓
-Today's assigned route
-  ↓
-Start trip
-  ↓
-Next stop
-  ↓
-Pickup event
-  ↓
-Next stop
-  ↓
-Drop-off event
-  ↓
-Trip complete
-```
-
-**Parent flow**
-
-```text
-Login
-  ↓
-My child
-  ↓
-Today's trip status
-  ↓
-Pickup/drop-off confirmation
-  ↓
-Service alerts
-```
+Expo / React Native supports the driver and parent experiences.
 
 ### Operations dashboard
 
 Next.js app intended for Vercel.
 
+## Backend
+
+Firebase provides:
+
+- Authentication
+- Firestore
+- Security Rules
+
+Firebase Cloud Functions provide:
+
+- privileged workflows
+- event-driven processing
+- derived operational metrics
+
+## Phase 2 request flow
+
 ```text
-Dispatcher
-  ↓
-Active routes
-  ├── route status
-  ├── driver
-  ├── progress
-  ├── delay
-  └── student events
+┌──────────────┐
+│ React Native │
+└──────┬───────┘
+       │
+       │ Firebase Auth
+       ▼
+┌──────────────┐
+│ Auth         │
+└──────┬───────┘
+       │ UID
+       ▼
+┌─────────────────────────────┐
+│ Firestore                   │
+│                             │
+│ users/{uid}                 │
+│ routes/{routeId}            │
+│ routeStops/{stopId}         │
+│ trips/{tripId}              │
+│ stopEvents/{eventId}        │
+│ serviceAlerts/{alertId}     │
+└──────────────┬──────────────┘
+               │
+               │ event
+               ▼
+       ┌─────────────────┐
+       │ Cloud Function  │
+       └─────────────────┘
 ```
 
-## Firestore model
+## Security boundary
+
+The mobile app is an untrusted client.
+
+Firestore Security Rules enforce what authenticated users can read/write.
+
+Cloud Functions run in a privileged environment and therefore must independently validate authorization before performing sensitive operations.
+
+## Data model
 
 ```text
 users/{userId}
@@ -67,61 +76,45 @@ stopEvents/{eventId}
 serviceAlerts/{alertId}
 ```
 
-### Why events are separate
-
-A `stopEvent` is an immutable operational fact:
-
-- who recorded it
-- what happened
-- when it happened
-- which route/trip/stop/student it belonged to
-- optional GPS coordinates
-
-This makes the system useful for both parent visibility and historical operations analytics.
-
 ## Scalability considerations
 
-For a real deployment:
-
 - Query stops by `routeId + sequence`.
+- Query routes by `driverId + active`.
+- Query trips by `driverId + serviceDate`.
 - Query active alerts by `active + startsAt`.
-- Avoid unbounded array growth in route documents.
-- Store high-volume events as separate documents.
-- Use Cloud Functions for derived metrics rather than making every mobile client update aggregate counters.
-- Add pagination to operational event views.
-- Use App Check.
-- Add automated Security Rules tests.
-- Add rate limiting / abuse protection around callable functions.
-- Keep service-account credentials exclusively server-side.
+- Keep high-volume events separate from stable route documents.
+- Avoid unbounded arrays.
+- Use server-side functions for derived metrics.
+- Paginate high-volume operational history.
 
 ## Routing
 
-The MVP stores ordered stops and an optional encoded polyline.
-
-A production implementation can introduce a route-generation service:
+A production route-generation pipeline can be:
 
 ```text
-dispatcher enters stops
-        ↓
-server validates addresses
-        ↓
-routing provider calculates optimized route
-        ↓
-route + ordered stops + polyline stored in Firestore
-        ↓
-driver app consumes the assigned route
+Dispatcher creates/edits stops
+            ↓
+Server validates addresses
+            ↓
+Geocoding
+            ↓
+Routing provider
+            ↓
+Optimized ordered stops + polyline
+            ↓
+Firestore
+            ↓
+Driver app
 ```
-
-The driver should not have to invent the route on the road.
 
 ## Location
 
-For a production app, location updates should be:
+Production location tracking should be:
 
-- opt-in and role-specific
-- limited to operational necessity
+- operationally necessary
+- consented and disclosed
 - sampled rather than written every second
 - retained for a defined period
-- inaccessible to unauthorized parents/students
+- inaccessible to unauthorized users
 
-Do not use the prototype with real children's information.
+Do not use this prototype with real children's information.

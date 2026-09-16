@@ -1,166 +1,162 @@
 # BTS — Bus to School Operations Platform
 
-A portfolio-grade prototype for a centralized private-school-bussing platform.
+BTS is a portfolio-grade prototype for a centralized private-school-bussing operations platform.
 
-BTS is designed around three operational problems:
+> **Prototype notice:** This project is not affiliated with or endorsed by Bus to School. It uses synthetic/demo data and must not be used with real student information.
 
-1. **Drivers** need a reliable, pre-routed digital workflow instead of paper directions.
-2. **Parents/students** need real-time visibility into pickup/drop-off status.
-3. **Operators** need centralized service alerts and route-performance data.
+## Phase 2: Real Firebase integration
 
-> This repository is a prototype and is not affiliated with or endorsed by Bus to School. It uses synthetic/demo data and does not contain real student information.
+This version adds the first real backend workflow:
 
-## Architecture
+- Firebase Authentication
+- User profiles / roles
+- Firestore-backed driver route assignment
+- Firestore-backed daily trips
+- Real-time route/stop listeners
+- Real pickup-event writes
+- Server-side event processing
+- Firestore Security Rules
+- Firestore composite indexes
+- Demo account creation
+- Local emulator support
+
+### Flow
 
 ```text
-                         ┌────────────────────────┐
-                         │      BTS Admin Web      │
-                         │   Next.js / Vercel      │
-                         └───────────┬────────────┘
-                                     │
-                                     │ Firebase Auth
-                                     ▼
-┌──────────────────────┐      ┌──────────────────────┐
-│  BTS Mobile App      │─────▶│   Firebase Platform  │
-│  Expo / React Native │      │ Auth + Firestore     │
-│                      │      │ + Cloud Functions    │
-│ Driver + Parent UX   │      └──────────┬───────────┘
-└──────────┬───────────┘                 │
-           │                             │
-           ▼                             ▼
-   Location / Maps                Node.js Functions
-   route progress                 alerts + analytics
+Driver
+  │
+  ├── Firebase Auth ──────────────┐
+  │                               ▼
+  │                         Firestore
+  │                         users/{uid}
+  │                               │
+  │                               ▼
+  ├── Assigned route ──────── routes/
+  │                               │
+  │                               ▼
+  ├── Ordered stops ───────── routeStops/
+  │                               │
+  │                               ▼
+  ├── Start trip ───────────── trips/
+  │                               │
+  └── Pickup ──────────────── stopEvents/
+                                  │
+                                  ▼
+                           Cloud Function
 ```
 
-## Monorepo
+## Setup
 
-- `apps/mobile` — Expo / React Native mobile app
-- `apps/admin` — Next.js operations dashboard, deployable to Vercel
-- `functions` — Firebase Cloud Functions (Node.js / TypeScript)
-- `packages/shared` — shared domain types and route logic
-- `firebase` — Firestore rules, indexes, emulator config and seed data
-- `docs` — architecture, data model and product notes
-
-## Core MVP
-
-### Driver
-- Sign in
-- See assigned route
-- See ordered student stops
-- Start trip
-- Mark student picked up
-- Mark student dropped off
-- See current trip progress
-- Report a delay
-- End trip
-
-### Parent
-- Sign in
-- See assigned child/student
-- See today's pickup/drop-off status
-- See active service alerts
-- See route status
-
-### Operations
-- Dashboard with active routes
-- View route details
-- Publish service alerts
-- Monitor pickup/drop-off events
-- Review route performance
-
-## Important design decision
-
-The client does **not** decide who can access sensitive student data. Firebase Authentication + Firestore Security Rules enforce authorization. Server-side Cloud Functions use privileged Admin SDK access only for trusted workflows.
-
-Firebase recommends Authentication + Firestore Security Rules for mobile/web clients, and server-side Admin SDK operations must be protected separately with IAM. See the official Firebase security guidance.
-
-## Quick start
-
-### 1. Requirements
-
-- Node.js 20+
-- npm
-- Expo CLI via `npx`
-- Firebase CLI
-- A Firebase project
-- Optional: Vercel account for the admin dashboard
-
-### 2. Install
+### 1. Install
 
 ```bash
 npm install
 ```
 
-### 3. Configure Firebase
+### 2. Create Firebase project
 
-Copy the examples:
+Create a Firebase project, then enable:
 
-```bash
-cp apps/mobile/.env.example apps/mobile/.env
-cp apps/admin/.env.example apps/admin/.env.local
-cp functions/.env.example functions/.env
+- Authentication → Email/Password
+- Firestore Database
+
+Create a Firebase Web App and copy its configuration into:
+
+```text
+apps/mobile/.env
 ```
 
-Fill in the Firebase web-app configuration.
+based on `.env.example`.
 
-**Never commit service-account private keys or production secrets.**
-
-### 4. Run the mobile app
+### 3. Start the app
 
 ```bash
 npm run mobile
 ```
 
-### 5. Run the admin dashboard
+### 4. Create a demo account
 
-```bash
-npm run admin
-```
+Open the mobile app → **Create demo account**.
 
-### 6. Run Firebase emulators
+The signup screen creates a Firebase Auth user and a matching `users/{uid}` profile.
+
+### 5. Seed route data
+
+For a local emulator:
 
 ```bash
 npm run firebase:emulators
-```
-
-### 7. Seed demo data
-
-```bash
 npm run seed
 ```
 
-## Suggested build order
+The seed script creates:
 
-1. Firebase Authentication
-2. Firestore schema + rules
-3. Driver route screen
-4. Pickup/drop-off event flow
-5. Parent tracking screen
-6. Admin dashboard
-7. Alerts
-8. Route analytics
-9. Maps / route polyline integration
-10. Push notifications
-11. Automated tests + CI
-12. Production hardening
+- demo route
+- route stops
+- students
+- daily trip
+- demo user profile documents
 
-## Portfolio positioning
+**Important:** the seed script does not create Firebase Authentication users. Create those through the app or Firebase Authentication.
 
-This project intentionally demonstrates:
+## Emulator development
 
-- React Native
-- TypeScript
-- Firebase Authentication
-- Firestore data modelling
-- Firestore Security Rules
-- Node.js / Cloud Functions
-- Event-driven backend workflows
-- Role-based access control
-- Timestamped operational events
-- Real-time listeners
-- Next.js
-- Vercel deployment
-- Testing and CI
-- Scalable query design
+Set:
 
-The current implementation uses synthetic data. Any real deployment would require substantially more privacy, security, child-safety, consent, retention and operational controls.
+```text
+EXPO_PUBLIC_USE_FIREBASE_EMULATORS=true
+```
+
+The Firebase service can then be extended to point Auth/Firestore at localhost for fully isolated development.
+
+## Security
+
+The Firestore rules are intentionally restrictive.
+
+Roles:
+
+- `parent`
+- `driver`
+- `dispatcher`
+- `admin`
+
+Drivers can only modify trips assigned to themselves and create stop events as themselves.
+
+Production hardening still required:
+
+- App Check
+- Security Rules automated tests
+- server-side role provisioning
+- audit logging
+- rate limiting
+- privacy/retention controls
+- production monitoring
+- notification permissions
+- child-safety review
+
+## Phase 2 acceptance test
+
+Once configured, you should be able to:
+
+1. Create a driver account.
+2. Sign in.
+3. Read the driver's assigned route.
+4. Read the route's ordered stops.
+5. Read today's assigned trip.
+6. Start the trip.
+7. Mark a stop as picked up.
+8. See a `stopEvents` document appear in Firestore.
+9. See the Cloud Function process that event.
+10. Sign out and sign back in.
+
+## Next phase
+
+Phase 3 will add the actual map/routing layer:
+
+- route visualization
+- geocoding
+- route polyline
+- driver GPS
+- ETA
+- route deviation detection
+- dispatcher route editing

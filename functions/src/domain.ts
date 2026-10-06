@@ -1,6 +1,6 @@
 export type Role = 'dispatcher' | 'driver' | 'parent' | 'student';
 export type Actor = {uid:string; role:Role};
-export type Stop = {name:string; time:string; lat:number; lng:number};
+export type Stop = {name:string; time:string; lat:number; lng:number; directionsQuery?:string};
 export type Route = {id:string; name:string; area:string; bus:string; stops:Stop[]; memberUids:string[]};
 export type Trip = {id:string; routeId:string; date:string; driverUid:string; status:'scheduled'|'active'|'completed'; memberUids:string[]};
 export type Ride = {id:string; tripId:string; routeId:string; name:string; stopIndex:number; status:'waiting'|'onboard'|'arrived'|'absent'; pickupAt:number|null; dropoffAt:number|null; memberUids:string[]};

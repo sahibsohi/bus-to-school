@@ -7,8 +7,6 @@
 3. Use Node 22, install command `npm ci`, build command `npm run build:web`, and output directory `dist` (also set in `vercel.json`).
 4. Leave environment variables unset to run fictional demo mode. Deploy when ready.
 
-This publishes the web client only. It does not deploy the Firebase backend, register real riders, or create mobile-store apps. A Vercel deployment was not performed on your behalf.
-
 ## Local Firebase emulator mode
 
 Install Java compatible with your Firebase emulator. Then:

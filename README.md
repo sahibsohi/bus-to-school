@@ -2,8 +2,6 @@
 
 **A React Native / Expo prototype for clearer school-bus journeys.** Drivers follow an ordered stop list, families see recorded pickup/drop-off confirmations, and dispatchers publish service updates directly to assigned users.
 
-Inspired by a former regional-program student's experience with paper directions and parent-only email updates. This is an independent, AI-assisted portfolio implementation, not an official Bus to School product or a deployed operator system. All included riders and routes are fictional. No 50,000-rider scale or performance claim has been validated.
-
 ## Features
 
 - Dispatcher, driver, parent, and student workspaces.
@@ -15,16 +13,16 @@ Inspired by a former regional-program student's experience with paper directions
 - Local demo persistence, role switching, and reset.
 - Optional Firebase Authentication, Firestore subscriptions, and Node.js callable backend with role and assignment checks.
 
-## Run the demo
+## Live App
 
-Use Node.js 22.13+ (Node 22 recommended), npm, and a modern browser.
+[Open BTS Connect](https://bus-to-school-steel.vercel.app/)
 
-```bash
-npm ci
-npm run web
-```
+Explore the dispatcher, driver, parent, and student views using a
+Central Peel route with five stops and 15 fictional students.
 
-No Firebase account, API key, or database is needed for demo mode. Expo opens the web app. For mobile, run `npm start` and use a compatible Expo Go version or a development build. iOS and Android device behavior still needs testing.
+The web app is hosted on Vercel. Attendance and service updates are
+currently stored in each browser; cross-device synchronization is
+not yet enabled.
 
 ### Try the complete workflow
 
@@ -43,7 +41,7 @@ Demo changes stay on the current device; different devices do not synchronize. F
 **Client:** TypeScript, React Native, Expo, React Native Web, AsyncStorage.  
 **Backend:** Node.js, Firebase Auth, Firestore, Firebase callable Cloud Functions.  
 **Verification:** TypeScript, Node test runner, Firestore rules tests, Playwright.  
-**Hosting:** Vercel configuration for the exported web app; Firebase hosts the backend separately.
+**Hosting:** Vercel configuration for the exported web app; Firebase hosts the backend.
 
 ## Firebase and Vercel
 
@@ -75,6 +73,6 @@ Firebase reads are capped at 200 documents per collection per session, filtered 
 
 Create `bts-connect`, leave “Add a README” unchecked, and upload the **contents** of this extracted folder. Keep `README.md`, `package.json`, and the configuration files at the repository root. Do not upload the ZIP itself or `node_modules`.
 
-Suggested description: **React Native and Firebase school transportation prototype with driver routes, timestamped attendance, family updates, and operations reporting.**
+Suggested description: **React Native and Firebase school transportation with driver routes, timestamped attendance, family updates, and operations reporting.**
 
-The repository includes configuration files that GitHub Desktop will include automatically. `docs/SETUP.md` explains environment setup; no private credentials are included.
+The repository includes configuration files that GitHub Desktop will include automatically. `docs/SETUP.md` explains environment setup.
